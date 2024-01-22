@@ -1,9 +1,9 @@
 # Carbon Black EDR Vagrant Auto Install
 
--------------------------------------------------------------------------------------
+
 Created:   	  2024
 Created by:    Roshan Ratnayake - detectx.com.au
--------------------------------------------------------------------------------------
+
 
 
 .DESCRIPTION
