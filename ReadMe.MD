@@ -14,6 +14,8 @@ This GIT repo does not contain the Carbon Blac EDR RPM or license file, you need
 Tested and working with Vmware workstation 17.5.0 build-22583795 and Vagrant for VMware Vagrant 2.4.0 , 
 vagrant-scp (0.5.9, global), vagrant-vmware-desktop (3.0.3, global)
 
+I am using this for my own reference, if somoone finds it useful, great.
+
 .Install Vagrant SCP Plugin
 
 vagrant plugin install vagrant-scp
@@ -144,8 +146,8 @@ nano /etc/hosts
 systemctl restart systemd-hostnamed
 nslookup CB-SERVER-CLUSTER-HEAD-NODE
 
-# Set timezone on Redhat
-# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/system_administrators_guide/chap-configuring_the_date_and_time#sect-Configuring_the_Date_and_Time-timedatectl-Time_Zone
+## Set timezone on Redhat
+ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/system_administrators_guide/chap-configuring_the_date_and_time#sect-Configuring_the_Date_and_Time-timedatectl-Time_Zone
  
 timedatectl list-timezones | grep Australia
 timedatectl set-timezone Australia/Brisbane
@@ -154,7 +156,7 @@ date +%r
 
 
 
-# Set up server
+## Set up server
 
 sudo systemctl disable firewalld
 sudo systemctl restart udev.service
@@ -168,8 +170,8 @@ ip address
 vmware-toolbox-cmd-v
 
 
-# Install CB Response
-# install as root or use sudo
+## Install CB Response
+## install as root or use sudo
 
 sudo rpm -ivh carbon-black-release-1.0.4-1-Carbon Black Inc._I149104.x86_64.rpm
 cat /etc/yum.repos.d/CarbonBlack.repo
@@ -182,7 +184,7 @@ reboot
 
 
 
-# Start Cb Response Server
+## Start Cb Response Server
 
 systemctl start cb-enterprise
 systemctl status cb-enterprise
@@ -197,6 +199,7 @@ https://192.168.193.135:443
 https://192.168.193.136:443
 
 
+## cbinit.ini
 
 # /usr/share/cb/cbinit --help Usage: cbinit
 # /usr/pgsql-13/bin/pg_ctl -D /var/cb/data/pgsql -l logfile start
@@ -207,7 +210,7 @@ admin_username=admin
 admin_first_name=Threat
 admin_last_name=Hunter
 admin_email=aw@organization.org
-admin_password=Sup3r$3cr3+ / password
+admin_password=password
 service_autostart=0
 force_reinit=1
 default_sensor_server_url=https://127.0.0.1:443
@@ -261,7 +264,6 @@ systemctl status cb-enterprise.service
 sudo /usr/share/cb/cbdiag --post
 
 
-
 yum clean all
 yum update cb-enterprise
 
@@ -309,6 +311,6 @@ NOTE: cbdaemon and event-forwarder services should not affect the startup and sh
 
 
 
-  # Putty
+  ## Putty
 
-  putty -ssh root@192.168.193.133 -pw Wicked1!
+  putty -ssh root@192.168.193.133 -pw 
