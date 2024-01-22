@@ -18,61 +18,61 @@ vagrant-scp (0.5.9, global), vagrant-vmware-desktop (3.0.3, global)
 
 vagrant plugin install vagrant-scp
 
-# CentOS Vagrant
-# Create 'vagrant.ini'
-# https://app.vagrantup.com/generic/boxes/centos8
-# create a folder, then create vagrant.ini
-# Username and Password osboxes.org/osboxes.org
-# https://www.osboxes.org/faq/what-are-the-credentials-for-virtual-machine-image/
+## CentOS Vagrant
+Create 'vagrant.ini'
+https://app.vagrantup.com/generic/boxes/centos8
+create a folder, then create vagrant.ini
+Username and Password osboxes.org/osboxes.org
+https://www.osboxes.org/faq/what-are-the-credentials-for-virtual-machine-image/
 
 
-# Get Red Hat 8 [RHEL 8.1-8.9 (64-bit)] Develop Edition
-# https://console.redhat.com/insights/image-builder/imagewizard?source=RHD#SIDs=&tags=
-# Installation source - 
-# https://cdn.redhat.com/content/dist/rhel8/8/x86_64/baseos/os/
-# https://console.redhat.com/insights/content?origin=red_hat
-# https://access.redhat.com/management/systems
-# https://developers.redhat.com/products/rhel/overview
+## Get Red Hat 8 [RHEL 8.1-8.9 (64-bit)] Develop Edition
+https://console.redhat.com/insights/image-builder/imagewizard?source=RHD#SIDs=&tags=
+Installation source - 
+https://cdn.redhat.com/content/dist/rhel8/8/x86_64/baseos/os/
+https://console.redhat.com/insights/content?origin=red_hat
+https://access.redhat.com/management/systems
+https://developers.redhat.com/products/rhel/overview
 
-# Doanload Red Hat Linux DVD 
-# Register on Red Hat Linux Developer, click on below link, select Red Hat Enterprise 8.4.0, x86_64, DVD iso, Download 9.43 GB)
-# https://developers.redhat.com/products/rhel/download#rhel-new-product-download-list-61451
-# https://access.cdn.redhat.com/content/origin/files/sha256/ea/ea5f349d492fed819e5086d351de47261c470fc794f7124805d176d69ddf1fcd/rhel-8.4-x86_64-dvd.iso?_auth_=1705372554_77829b6bde1e94d2255df005d7f848d5
-# subscription-manager register --username <username> --password <password> --auto-attach
-# subscription-manager register --username roshan.ratnayake@broadcom.com --password 7zE3I.VA-976D6 --auto-attach
-# https://access.redhat.com/solutions/253273
+## Doanload Red Hat Linux DVD 
+Register on Red Hat Linux Developer, click on below link, select Red Hat Enterprise 8.4.0, x86_64, DVD iso, Download 9.43 GB)
+https://developers.redhat.com/products/rhel/download#rhel-new-product-download-list-61451
+https://access.cdn.redhat.com/content/origin/files/sha256/ea/ea5f349d492fed819e5086d351de47261c470fc794f7124805d176d69ddf1fcd/rhel-8.4-x86_64-dvd.iso?_auth_=1705372554_77829b6bde1e94d2255df005d7f848d5
+subscription-manager register --username <username> --password <password> --auto-attach
+subscription-manager register --username roshan.ratnayake@broadcom.com --password 7zE3I.VA-976D6 --auto-attach
+https://access.redhat.com/solutions/253273
 
-# CentOS 7.9 (Tested and Working)
-# https://mirror.aarnet.edu.au/pub/centos/7.9.2009/isos/x86_64/
-# https://mirror.aarnet.edu.au/pub/centos/7.9.2009/isos/x86_64/CentOS-7-x86_64-Minimal-2009.iso
-
-
-
-# CentOS 
-# http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/
-# https://mirror.cs.pitt.edu/centos-vault/8.4.2105/isos/x86_64/
-# Minimal
-
-# vagrant/vagrant
-# Username – osboxes
-# Password – osboxes.org
-# For Root user account
-# Password – osboxes.org
-
-# For some stupid reason the root password doesnt work, so you have to reset it for this vagrant file.
-
-# Start the VM and press 'e' to edit
-# find linux and press END and add rd.break then Ctrl + X to boot with modifed settings
-# mount -o remount,rw /sysroo
-# chroot /sysroot
-# passwrd (it must be complex otherwise, boot will fail
-# touch /.autorelabel
-# exit
-# reboot
+## CentOS 7.9 (Tested and Working)
+https://mirror.aarnet.edu.au/pub/centos/7.9.2009/isos/x86_64/
+https://mirror.aarnet.edu.au/pub/centos/7.9.2009/isos/x86_64/CentOS-7-x86_64-Minimal-2009.iso
 
 
-# Disable ipv6
-# https://linuxhint.com/disable_ipv6_centos8/
+
+## CentOS 
+http://mirror.centos.org/centos/8-stream/BaseOS/x86_64/os/
+https://mirror.cs.pitt.edu/centos-vault/8.4.2105/isos/x86_64/
+Minimal
+
+## vagrant/vagrant
+Username – osboxes
+Password – osboxes.org
+For Root user account
+Password – osboxes.org
+
+For some stupid reason the root password doesnt work, so you have to reset it for this vagrant file.
+
+Start the VM and press 'e' to edit
+find linux and press END and add rd.break then Ctrl + X to boot with modifed settings
+mount -o remount,rw /sysroo
+chroot /sysroot
+passwrd (it must be complex otherwise, boot will fail
+touch /.autorelabel
+exit
+reboot
+
+
+## Disable ipv6
+https://linuxhint.com/disable_ipv6_centos8/
 
 
 
@@ -82,7 +82,7 @@ Vagrant.configure("2") do |config|
   config.vm.box = "generic/centos8"
 end
 
-# Create a Snapshot
+## Create a Snapshot
 
 vagrant halt --force
 vagrant snapshot save <SNAPSHOT_NAME>
@@ -90,7 +90,7 @@ vagrant snapshot save centos_ready_before_cb_install
 vagrant snapshot list
 vagrant snapshot restore <SNAPSHOT_NAME>
 
-# Install server
+## Install server
 
 del Vagrantfile
 vagrant init generic/centos8
@@ -99,24 +99,22 @@ vagrant status
 vagrant global-status
 vagrant ssh-config
 
-# Copy file from local to server
+## Copy file from local to server
 
-# vagrant scp /path/to/local/file/on/your/machine default:/path/on/vagrant/machine
-# https://stackoverflow.com/questions/32410299/how-to-copy-file-from-a-vagrant-machine-to-localhost
-# copy the license and rpm to the same directory as the scp command doesnt handle paths very well
+vagrant scp /path/to/local/file/on/your/machine default:/path/on/vagrant/machine
+https://stackoverflow.com/questions/32410299/how-to-copy-file-from-a-vagrant-machine-to-localhost
+copy the license and rpm to the same directory as the scp command doesnt handle paths very well
 
 vagrant scp ./1.txt default:~
 vagrant scp carbon-black-2024-1-10.lic default:~
 vagrant scp "carbon-black-release-1.0.4-1-Carbon Black Inc._I149104.x86_64.rpm" default:~
 
-# SSH into CentOS and configure machine
+## SSH into CentOS and configure machine
 
 vagrant ssh
-
-
 vagrant ssh-config | findstr "HostName"
 
-# ------------------------------------------------------------------------------------------------------------------------------------------------
+## ------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Insure your DNS resolution is working to local hostname and edit /etc/hosts insure to stay out of the block within BEGIN/END.
 
