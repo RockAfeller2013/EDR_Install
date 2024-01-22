@@ -3,10 +3,12 @@
 Created:   	  2024
 Created by:    Roshan Ratnayake - detectx.com.au
 -------------------------------------------------------------------------------------
+
 .DESCRIPTION
 
 Install Carbon Black On Prem EDR using Hashicorp Vagrant
-This GIT repo does not contain the RPM or license file, you need to request them from your local SE.
+This GIT repo does not contain the Carbon Blac EDR RPM or license file, you need to request them from your local SE.
+
 Tested and working with Vmware workstation 17.5.0 build-22583795 and Vagrant for VMware Vagrant 2.4.0 , 
 vagrant-scp (0.5.9, global), vagrant-vmware-desktop (3.0.3, global)
 
