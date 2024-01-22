@@ -1,8 +1,4 @@
 # Carbon Black EDR Vagrant Auto Install
--------------------------------------------------------------------------------------
-Created:   	  2024
-Created by:    Roshan Ratnayake - detectx.com.au
--------------------------------------------------------------------------------------
 
 .DESCRIPTION
 
@@ -13,6 +9,7 @@ Tested and working with Vmware workstation 17.5.0 build-22583795 and Vagrant for
 vagrant-scp (0.5.9, global), vagrant-vmware-desktop (3.0.3, global)
 
 .Install Vagrant SCP Plugin
+
 vagrant plugin install vagrant-scp
 
 # CentOS Vagrant
