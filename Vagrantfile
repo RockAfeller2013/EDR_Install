@@ -37,5 +37,6 @@ config.vm.provision "shell", inline: <<-SHELL
     sudo service cb-enterprise start
     curl --insecure -I https://192.168.193.141:443 | grep HTTP
     curl --insecure -s --head https://192.168.193.141:443 | head -n 1
+    echo "https://$(hostname -I | awk '{print $1}'):443"
   SHELL
 end
