@@ -13,6 +13,7 @@ sudo timedatectl set-ntp true
 # Install Carbon Black repo package (ensure the .rpm is in the current directory or provide full path)
 #sudo rpm -ivh carbon-black-release-1.0.4-1-Carbon\ Black\ Inc._I149104.x86_64.rpm
 sudo rpm -ivh chresponse.rpm
+
 # Disable conflicting modules
 sudo yum -y module disable postgresql redis python38 python39
 
