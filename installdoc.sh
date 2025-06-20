@@ -1,4 +1,6 @@
 #!/bin/bash
+# bash -c "$(wget -qLO - https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/installdoc.sh)"
+
 
 # Exit on error
 set -e
