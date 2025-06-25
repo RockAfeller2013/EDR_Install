@@ -6,12 +6,12 @@ manage_etc_hosts: true
 
 users:
   - name: root
-    plain_text_passwd: "Wicked1!"
+    plain_text_passwd: "Password1!"
     lock_passwd: false
     shell: /bin/bash
 
   - name: centos
-    plain_text_passwd: "WWicked1!"
+    plain_text_passwd: "Password1!"
     lock_passwd: false
     shell: /bin/bash
     groups: wheel
