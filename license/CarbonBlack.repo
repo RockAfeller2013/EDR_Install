@@ -1,6 +1,7 @@
 [CarbonBlack]
 name=CarbonBlack
 baseurl=https://yum.distro.carbonblack.io/enterprise/7.8.1-1/$releasever/$basearch
+baseurl=https://yum.distro.carbonblack.io/enterprise/stable/$releasever/$basearch/
 gpgcheck=1
 gpgkey=https://yum.distro.carbonblack.io/enterprise/keys/public.asc
 gpgkey=https://yum.distro.carbonblack.io/enterprise/keys/cb.asc
