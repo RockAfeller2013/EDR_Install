@@ -7,8 +7,15 @@ https://chatgpt.com/c/68649b9e-7528-800e-ad09-7b01a816ba31
 
 cat  revyuild200.sh | base64 | awk '{print "\033]52;c;" $0 "\a"}'
 
+
+
+# Make VM Directory 
+
+mkdir /var/lib/vz/images/202/
+
 ## Download Image
-curl -o /var/lib/vz/template/iso/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2 https://dl.rockylinux.org/pub/rocky/8/images/x86_64/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2
+
+curl -o /var/lib/vz/images/202/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2 https://dl.rockylinux.org/pub/rocky/8/images/x86_64/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2
 
 # Download Config
 
@@ -29,7 +36,9 @@ qm create 202 \
   --boot order=scsi0
 
 # Import QCOW2 disk
-qm importdisk 202 /var/lib/vz/template/iso/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2 local-lvm
+
+qm importdisk 202 /var/lib/vz/images/202/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2 local-lvm
+
 
 # Attach disk and cloud-init config
 qm set 202 --scsi0 local-lvm:vm-202-disk-0
