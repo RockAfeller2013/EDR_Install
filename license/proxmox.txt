@@ -112,6 +112,7 @@ sudo /usr/share/cb/cbssl backup --out backup.bac
 
 # Start the service
 sudo service cb-enterprise start
+sudo service cb-enterprise status
 
 # Boot will take 5 mins 
 
