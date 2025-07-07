@@ -2,18 +2,16 @@
 
 ## Fresh Install
 # As of July 2025, there are no supported non-Stream (classic) CentOS versions—CentOS Linux 7 reached end of life on June 30, 2024, and CentOS Linux 8 ended in 2021. The only active CentOS version is CentOS Stream 9, a rolling-release distro that acts as a preview of future RHEL 9 updates. For users needing a stable, production-ready, RHEL-compatible alternative, recommended options include Rocky Linux 9, AlmaLinux 9, and Oracle Linux 9.
+# https://chatgpt.com/c/68649b9e-7528-800e-ad09-7b01a816ba31
+# cat  revyuild200.sh | base64 | awk '{print "\033]52;c;" $0 "\a"}'
 
-https://chatgpt.com/c/68649b9e-7528-800e-ad09-7b01a816ba31
-
-cat  revyuild200.sh | base64 | awk '{print "\033]52;c;" $0 "\a"}'
-
-
+# Deploy Carbon Black On-Prem EDR on Proxmox
 
 # Make VM Directory 
 
 mkdir /var/lib/vz/images/202/
 
-## Download Image
+## Download Rocky Linux 8 QCoW2 Image
 
 curl -o /var/lib/vz/images/202/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2 https://dl.rockylinux.org/pub/rocky/8/images/x86_64/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2
 
@@ -39,8 +37,8 @@ qm create 202 \
 
 qm importdisk 202 /var/lib/vz/images/202/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2 local-lvm
 
-
 # Attach disk and cloud-init config
+
 qm set 202 --scsi0 local-lvm:vm-202-disk-0
 qm set 202 --ide2 local:cloudinit
 qm set 202 --boot order=scsi0
@@ -52,23 +50,22 @@ qm config 202
 # Set Static IP 
 # qm set 201 --nameserver 1.1.1.1,8.8.8.8
 # qm set 201 --ciuser root --cipassword Password1!
+
 qm set 202 --ipconfig0 ip=192.168.1.30/24,gw=192.168.1.99
 qm set 202 --nameserver 198.142.152.164
 qm cloudinit update 202
 
 
 # Start VM and verify agent ping
+
 qm start 202
 qm agent 202 ping
 qm reboot 202
 
 
-# Rebuild it
-qm shutdown 202
-qm destroy 202 --purge
-
 ##########################
 ## SSH into the VM
+
 ssh-keygen -R 192.168.1.30
 ssh root@192.168.1.30
 scp * root@192.168.1.30/user/root
@@ -76,6 +73,7 @@ scp * root@192.168.1.30/user/root
 
 
 # Basic Checks
+
 ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1 | paste -sd' '
 cat /etc/os-release
 uname -r
@@ -85,7 +83,7 @@ hostname
 # Set DNS
 # curl https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/license/setdns.sh
 
-#sudo yum clean all
+# sudo yum clean all
 # sudo yum makecache
 #sudo yum upgrade -y
 #sudo yum clean all
@@ -152,3 +150,8 @@ qm listsnapshot <vmid>
 
 # Example:
 qm listsnapshot 101
+
+# Destory and Rebuild it
+
+qm shutdown 202
+qm destroy 202 --purge
