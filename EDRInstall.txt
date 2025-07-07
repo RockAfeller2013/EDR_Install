@@ -1,0 +1,108 @@
+# Deploy Carbon Black On-Prem EDR on Proxmox
+
+# Make VM Directory 
+
+mkdir /var/lib/vz/images/202/
+
+## Download Rocky Linux 8 QCoW2 Image
+
+curl -o /var/lib/vz/images/202/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2 https://dl.rockylinux.org/pub/rocky/8/images/x86_64/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2
+
+# Download Config
+
+curl -o /var/lib/vz/snippets/user-data.yaml https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/license/user-data.yaml
+
+# Create the VM
+
+qm create 202 \
+  --name cbresponse2 \
+  --memory 32768 \
+  --cores 4 \
+  --net0 virtio,bridge=vmbr0 \
+  --scsihw virtio-scsi-pci \
+  --ostype l26 \
+  --cpu host \
+  --serial0 socket \
+  --agent 1 \
+  --boot order=scsi0
+
+# Import QCOW2 disk
+
+qm importdisk 202 /var/lib/vz/images/202/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2 local-lvm
+
+# Attach disk and cloud-init config
+
+qm set 202 --scsi0 local-lvm:vm-202-disk-0
+qm set 202 --ide2 local:cloudinit
+qm set 202 --boot order=scsi0
+qm set 202 --cicustom "user=local:snippets/user-data.yaml"
+qm set 202 --ide2 local-lvm:cloudinit
+qm cloudinit update 202
+qm config 202
+
+# Set Static IP 
+
+qm set 202 --ipconfig0 ip=192.168.1.30/24,gw=192.168.1.99
+qm set 202 --nameserver 198.142.152.164
+qm cloudinit update 202
+
+# Start VM and verify agent ping
+
+qm start 202
+qm agent 202 ping
+qm reboot 202
+
+
+##########################
+## SSH into the VM
+
+ssh-keygen -R 192.168.1.30
+ssh root@192.168.1.30
+scp * root@192.168.1.30/user/root
+
+
+
+# Basic Checks
+
+ip -4 -o addr show | awk '{print $4}' | cut -d/ -f1 | paste -sd' '
+cat /etc/os-release
+uname -r
+cat /etc/resolv.conf
+hostname
+
+
+# Download Carbon Black EDR License
+
+curl -LO https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/license/carbon-black-release-1.0.5-1.x86_64.rpm
+curl -o 52793833-2-1-1731894808466.lic "https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/license/52793833-2-1-1731894808466.lic"
+# curl -LO "https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/cbinit.ini"
+
+sudo rpm -ivh --force carbon-black-release-1.0.5-1.x86_64.rpm
+
+# Install 
+
+sudo yum -y module disable postgresql redis python38 python39
+sudo yum -y install --nogpgcheck cb-enterprise
+
+# Initialize Carbon Black
+sudo /usr/share/cb/cbinit #cbinit.ini
+
+# Backup SSL cert
+
+sudo /usr/share/cb/cbssl backup --out backup.bac
+
+# Start the service
+# Boot will take 5 mins 
+
+sudo service cb-enterprise start
+sudo service cb-enterprise status
+
+
+
+# Check HTTPS response
+curl --insecure -I https://192.168.193.141:443 | grep HTTP
+curl --insecure -s --head https://192.168.193.141:443 | head -n 1
+
+# Print access URL
+echo "https://$(hostname -I | awk '{print $1}'):443"
+
