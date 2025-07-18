@@ -30,7 +30,10 @@ PLUGINS=("manx" "stockpile" "response" "compass" "access" "atomic" "builder" "de
 echo "[*] Updating system..."
 sudo apt update && sudo apt upgrade -y
 
-sudo apt install -y libxml2-dev libxslt1-dev zlib1g-dev
+sudo apt install -y libxml2-dev libxslt1-dev 
+sudo apt install -y libxml2-dev libxslt1-dev zlib1g-dev python3-dev gcc
+sudo apt install -y zlib1g-dev libffi-dev
+
 
 
 # --- INSTALL PREREQUISITES ---
