@@ -2,29 +2,24 @@
 
 set -e
 
-echo "[*] Updating Kali and installing base dependencies..."
+echo "[*] Updating system..."
 sudo apt update && sudo apt install -y \
-  git curl wget build-essential libxml2-dev libxslt1-dev zlib1g-dev libffi-dev \
-  gcc golang openssl python3 python3-pip python3-venv ca-certificates lsb-release gnupg apt-transport-https
+    curl git sudo gnupg ca-certificates lsb-release apt-transport-https \
+    build-essential libxml2-dev libxslt1-dev zlib1g-dev libffi-dev \
+    gcc golang openssl python3 python3-pip python3-venv nodejs npm
 
-echo "[*] Installing NodeJS v16..."
-curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-sudo apt install -y nodejs
-
-echo "[*] Installing Docker..."
+echo "[*] Installing Docker (if needed)..."
 curl -fsSL https://get.docker.com | sh
-
-echo "[*] Adding user to docker group..."
 sudo usermod -aG docker $USER
 
 echo "[*] Installing Docker Compose manually..."
-DOCKER_COMPOSE_VERSION="2.24.1"
-sudo curl -L "https://github.com/docker/compose/releases/download/v$DOCKER_COMPOSE_VERSION/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+DC_VERSION="2.24.1"
+sudo curl -L "https://github.com/docker/compose/releases/download/v${DC_VERSION}/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
 
 echo "# Important:
-# After first run, if Docker wasn’t installed before, logout and login again or run:
+# If Docker was just installed, logout and login again or run:
 #   newgrp docker
 "
 
@@ -68,6 +63,5 @@ docker build -t caldera:5.0.0 .
 echo "[*] Running Caldera..."
 docker run -d --name caldera -p 8888:8888 caldera:5.0.0
 
-echo "[✔] Caldera v5 is now running."
-echo "    URL: http://localhost:8888"
+echo "[✔] Caldera is now running at http://localhost:8888"
 echo "    Login: red / admin"
