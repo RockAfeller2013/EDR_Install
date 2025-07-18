@@ -1,6 +1,6 @@
 #!/bin/bash
 # curl -S -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/install_caldera.sh | bash
-
+#!/bin/bash
 set -e
 
 # Check if docker is installed
@@ -95,6 +95,6 @@ docker run -d -p 8888:8888 --name $CONTAINER_NAME $IMAGE_NAME
 echo "[✓] CALDERA is running in Docker."
 echo "Open your browser to https://localhost:8888 (default creds: red/admin)"
 
-# IMPORTANT:
-# After first run, if Docker wasn’t installed before, logout and login again or run:
-#    newgrp docker
+echo "IMPORTANT:"
+echo "# After first run, if Docker wasn’t installed before, logout and login again or run:"
+echo "#    newgrp docker"
