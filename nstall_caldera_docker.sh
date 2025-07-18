@@ -1,6 +1,6 @@
 #!/bin/bash
 # curl -S -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/nstall_caldera_docker.sh | bash
-#!/bin/bash
+
 set -e
 
 # Check Docker
