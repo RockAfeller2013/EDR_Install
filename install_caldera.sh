@@ -1,5 +1,5 @@
 #!/bin/bash
-# curl -sS -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/install_caldera.sh | bash
+# curl -S -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/install_caldera.sh | bash
 
 # Full CALDERA Installer for Kali Linux
 # Includes: CALDERA + Go + Sandcat + HTTPS + All Official Plugins + Headless Mode
@@ -24,8 +24,18 @@ sudo apt update && sudo apt upgrade -y
 
 # --- INSTALL DEPENDENCIES ---
 echo "[*] Installing required packages..."
-sudo apt install -y git python3 python3-pip python3-venv build-essential wget tar openssl \
-  libxml2-dev libxslt1-dev zlib1g-dev python3-dev gcc libffi-dev
+sudo apt install -y git curl wget tar openssl build-essential \
+  libxml2-dev libxslt1-dev zlib1g-dev libffi-dev gcc \
+  python3.8 python3.8-venv python3.8-dev
+
+# --- INSTALL Node.js v16.x ---
+echo "[*] Installing Node.js v16.x..."
+curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Verify node and npm versions
+node -v
+npm -v
 
 # --- INSTALL GO ---
 echo "[*] Installing Go $GO_VERSION..."
@@ -45,18 +55,17 @@ sudo chown -R $USER:$USER "$CALDERA_DIR"
 cd "$CALDERA_DIR"
 
 # --- PYTHON VENV SETUP ---
-echo "[*] Creating Python virtual environment..."
-python3 -m venv venv
+echo "[*] Creating Python 3.8 virtual environment..."
+python3.8 -m venv venv
 source venv/bin/activate
 
-# Upgrade pip and install prebuilt lxml first to avoid build errors
 echo "[*] Installing Python packages..."
 pip install --upgrade pip setuptools wheel
-pip install lxml==4.9.3 --only-binary :all:
-pip install -r requirements.txt || echo "[!] Some packages may have already been installed."
+sed -i 's/lxml==4.9.3/lxml>=4.9.3/' requirements.txt
+pip install -r requirements.txt
 
 # --- GENERATE SELF-SIGNED CERTS ---
-echo "[*] Generating self-signed TLS certs..."
+echo "[*] Generating TLS certs..."
 mkdir -p "$CALDERA_DIR"/certs
 openssl req -x509 -newkey rsa:4096 -nodes -keyout "$CALDERA_DIR/certs/key.pem" -out "$CALDERA_DIR/certs/cert.pem" -days 365 -subj "/CN=caldera.local"
 
@@ -74,19 +83,20 @@ for plugin in "${PLUGINS[@]}"; do
   git clone "https://github.com/mitre/${plugin}.git"
 done
 
-# --- CREATE AUTOSTART SCRIPT ---
-cat <<EOF > "$CALDERA_DIR/start-caldera.sh"
+# --- AUTO-LOGIN SERVER STARTUP (optional) ---
+cat <<EOF > "$CALDERA_DIR/start_caldera.sh"
 #!/bin/bash
 cd "$CALDERA_DIR"
 source venv/bin/activate
-python server.py --insecure --headless --plugins all
+python3.8 server.py --insecure --plugins all
 EOF
-chmod +x "$CALDERA_DIR/start-caldera.sh"
+chmod +x "$CALDERA_DIR/start_caldera.sh"
 
 echo
-echo "[✓] CALDERA installed with Sandcat, HTTPS, all plugins, and headless mode."
+echo "[✓] CALDERA installed with Sandcat, HTTPS, official plugins, and Node.js v16+."
 echo
-echo "👉 To start CALDERA with no login (headless):"
-echo "cd $CALDERA_DIR && ./start-caldera.sh"
+echo "👉 To run securely with TLS:"
+echo "cd $CALDERA_DIR && source venv/bin/activate && python3.8 server.py --certfile certs/cert.pem --keyfile certs/key.pem --plugins all"
 echo
-echo "🛡️  Access via browser at: https://<your-ip>:8888"
+echo "👉 Or run headless (insecure, no browser prompts):"
+echo "$CALDERA_DIR/start_caldera.sh"
