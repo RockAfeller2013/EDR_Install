@@ -1,23 +1,15 @@
 #!/bin/bash
 # curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/install_caldera.sh | bash
 
-
 # Full CALDERA Installer for Kali Linux
-# Includes: CALDERA + Go + Sandcat + HTTPS + All Official Plugins
+# Includes: CALDERA + Go + Sandcat + HTTPS + All Official Plugins + Headless Mode
 # chmod +x install_caldera.sh
 # sudo ./install_caldera.sh
-# python server.py --certfile certs/cert.pem --keyfile certs/key.pem --plugins stockpile,manx,response,atomic,builder,debrief
-# python server.py --insecure --plugins all
-# ccess CALDERA via browser: https://<your-ip>:8888
-
-#Default creds: red/admin
-
-#Sandcat agent binaries:
-
-#agents/sandcat/sandcat.exe (Windows)
-
-#agents/sandcat/sandcat (Linux)
-
+# Access CALDERA: https://<your-ip>:8888
+# Default red team is auto-logged in with --headless mode enabled
+# Agents:
+#   agents/sandcat/sandcat.exe (Windows)
+#   agents/sandcat/sandcat (Linux)
 
 set -e
 
@@ -30,15 +22,10 @@ PLUGINS=("manx" "stockpile" "response" "compass" "access" "atomic" "builder" "de
 echo "[*] Updating system..."
 sudo apt update && sudo apt upgrade -y
 
-sudo apt install -y libxml2-dev libxslt1-dev 
-sudo apt install -y libxml2-dev libxslt1-dev zlib1g-dev python3-dev gcc
-sudo apt install -y zlib1g-dev libffi-dev
-
-
-
-# --- INSTALL PREREQUISITES ---
-echo "[*] Installing base packages..."
-sudo apt install -y git python3 python3-pip python3-venv build-essential wget tar openssl
+# --- INSTALL DEPENDENCIES ---
+echo "[*] Installing required packages..."
+sudo apt install -y git python3 python3-pip python3-venv build-essential wget tar openssl \
+  libxml2-dev libxslt1-dev zlib1g-dev python3-dev gcc libffi-dev
 
 # --- INSTALL GO ---
 echo "[*] Installing Go $GO_VERSION..."
@@ -61,8 +48,12 @@ cd "$CALDERA_DIR"
 echo "[*] Creating Python virtual environment..."
 python3 -m venv venv
 source venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
+
+# Upgrade pip and install prebuilt lxml first to avoid build errors
+echo "[*] Installing Python packages..."
+pip install --upgrade pip setuptools wheel
+pip install lxml==4.9.3 --only-binary :all:
+pip install -r requirements.txt || echo "[!] Some packages may have already been installed."
 
 # --- GENERATE SELF-SIGNED CERTS ---
 echo "[*] Generating self-signed TLS certs..."
@@ -83,10 +74,19 @@ for plugin in "${PLUGINS[@]}"; do
   git clone "https://github.com/mitre/${plugin}.git"
 done
 
+# --- CREATE AUTOSTART SCRIPT ---
+cat <<EOF > "$CALDERA_DIR/start-caldera.sh"
+#!/bin/bash
+cd "$CALDERA_DIR"
+source venv/bin/activate
+python server.py --insecure --headless --plugins all
+EOF
+chmod +x "$CALDERA_DIR/start-caldera.sh"
+
 echo
-echo "[✓] CALDERA installed with Sandcat, HTTPS, and official plugins."
+echo "[✓] CALDERA installed with Sandcat, HTTPS, all plugins, and headless mode."
 echo
-echo "👉 To start CALDERA securely:"
-echo "cd $CALDERA_DIR"
-echo "source venv/bin/activate"
-echo "python server.py --certfile certs/cert.pem --keyfile certs/key.pem --plugins all"
+echo "👉 To start CALDERA with no login (headless):"
+echo "cd $CALDERA_DIR && ./start-caldera.sh"
+echo
+echo "🛡️  Access via browser at: https://<your-ip>:8888"
