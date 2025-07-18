@@ -30,6 +30,9 @@ PLUGINS=("manx" "stockpile" "response" "compass" "access" "atomic" "builder" "de
 echo "[*] Updating system..."
 sudo apt update && sudo apt upgrade -y
 
+sudo apt install -y libxml2-dev libxslt1-dev zlib1g-dev
+
+
 # --- INSTALL PREREQUISITES ---
 echo "[*] Installing base packages..."
 sudo apt install -y git python3 python3-pip python3-venv build-essential wget tar openssl
