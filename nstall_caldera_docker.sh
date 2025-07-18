@@ -1,67 +1,122 @@
 #!/bin/bash
 
-set -e
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
 
-echo "[*] Updating system..."
-sudo apt update && sudo apt install -y \
-    curl git sudo gnupg ca-certificates lsb-release apt-transport-https \
-    build-essential libxml2-dev libxslt1-dev zlib1g-dev libffi-dev \
-    gcc golang openssl python3 python3-pip python3-venv nodejs npm
+# Check if running as root
+if [ "$(id -u)" -ne 0 ]; then
+    echo -e "${RED}[!] This script must be run as root${NC}"
+    exit 1
+fi
 
-echo "[*] Installing Docker (if needed)..."
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker $USER
+# Function to install Docker
+install_docker() {
+    echo -e "${YELLOW}[*] Installing Docker...${NC}"
+    # Remove old versions if they exist
+    apt remove -y docker docker-engine docker.io containerd runc 2>/dev/null
 
-echo "[*] Installing Docker Compose manually..."
-DC_VERSION="2.24.1"
-sudo curl -L "https://github.com/docker/compose/releases/download/v${DC_VERSION}/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
+    # Install dependencies
+    apt update
+    apt install -y ca-certificates curl gnupg
 
-echo "# Important:
-# If Docker was just installed, logout and login again or run:
-#   newgrp docker
-"
+    # Add Docker's official GPG key
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
 
-echo "[*] Cloning Caldera v5..."
-mkdir -p ~/caldera-docker
-cd ~/caldera-docker
-git clone --branch 5.0.0 https://github.com/mitre/caldera.git
+    # Set up the repository
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-echo "[*] Creating Dockerfile..."
-cat << 'EOF' > Dockerfile
-FROM python:3.8-slim
+    # Install Docker
+    apt update
+    apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
 
-RUN apt-get update && apt-get install -y \
-    git curl wget build-essential libxml2-dev libxslt1-dev zlib1g-dev libffi-dev \
-    gcc golang-go nodejs npm openssl && \
-    apt-get clean
+    # Start and enable Docker
+    systemctl enable --now docker
 
-WORKDIR /opt/caldera
+    # Verify installation
+    if docker --version &>/dev/null; then
+        echo -e "${GREEN}[+] Docker installed successfully${NC}"
+    else
+        echo -e "${RED}[!] Docker installation failed${NC}"
+        exit 1
+    fi
+}
 
-COPY caldera /opt/caldera
+# Function to install Docker Compose
+install_docker_compose() {
+    echo -e "${YELLOW}[*] Installing Docker Compose...${NC}"
+    # Try to install via package manager first
+    if apt install -y docker-compose-plugin 2>/dev/null; then
+        ln -s /usr/libexec/docker/cli-plugins/docker-compose /usr/local/bin/docker-compose
+    else
+        # Fallback to manual installation
+        COMPOSE_VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)
+        curl -L "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        chmod +x /usr/local/bin/docker-compose
+    fi
 
-RUN python3 -m venv venv && \
-    . venv/bin/activate && \
-    pip install --upgrade pip setuptools wheel && \
-    sed -i 's/lxml==4.9.3/lxml>=4.9.3/' requirements.txt && \
-    pip install -r requirements.txt
+    # Verify installation
+    if docker-compose --version &>/dev/null; then
+        echo -e "${GREEN}[+] Docker Compose installed successfully${NC}"
+    else
+        echo -e "${RED}[!] Docker Compose installation failed${NC}"
+        exit 1
+    fi
+}
 
-RUN cd /opt/caldera/agents/sandcat && \
-    go mod tidy && \
-    GOOS=windows GOARCH=amd64 go build -o sandcat.exe ./gocat.go && \
-    GOOS=linux GOARCH=amd64 go build -o sandcat ./gocat.go
+# Main installation function
+main() {
+    echo -e "${YELLOW}[*] Starting Caldera Docker installation...${NC}"
 
-EXPOSE 8888
+    # Update system
+    echo -e "${YELLOW}[*] Updating system...${NC}"
+    apt update && apt upgrade -y
+    apt install -y curl git sudo
 
-CMD ["/opt/caldera/venv/bin/python", "server.py"]
-EOF
+    # Install Docker if not present
+    if ! command -v docker &>/dev/null; then
+        install_docker
+    else
+        echo -e "${GREEN}[+] Docker is already installed${NC}"
+    fi
 
-echo "[*] Building Caldera Docker image..."
-docker build -t caldera:5.0.0 .
+    # Install Docker Compose if not present
+    if ! command -v docker-compose &>/dev/null; then
+        install_docker_compose
+    else
+        echo -e "${GREEN}[+] Docker Compose is already installed${NC}"
+    fi
 
-echo "[*] Running Caldera..."
-docker run -d --name caldera -p 8888:8888 caldera:5.0.0
+    # Clone Caldera
+    echo -e "${YELLOW}[*] Installing Caldera...${NC}"
+    if [ -d "caldera" ]; then
+        echo -e "${YELLOW}[!] Caldera directory already exists. Pulling latest changes...${NC}"
+        cd caldera || exit
+        git pull
+        git submodule update --init --recursive
+    else
+        git clone https://github.com/mitre/caldera.git --recursive
+        cd caldera || exit
+    fi
 
-echo "[✔] Caldera is now running at http://localhost:8888"
-echo "    Login: red / admin"
+    # Start Caldera with Docker
+    echo -e "${YELLOW}[*] Starting Caldera with Docker...${NC}"
+    docker-compose up -d
+
+    # Check if Caldera is running
+    if docker ps | grep -q "caldera"; then
+        echo -e "${GREEN}[+] Caldera is now running!${NC}"
+        echo -e "${YELLOW}[*] Access Caldera at http://localhost:8888${NC}"
+        echo -e "${YELLOW}[*] Default credentials: red/admin${NC}"
+    else
+        echo -e "${RED}[!] Caldera failed to start${NC}"
+        exit 1
+    fi
+}
+
+# Run main function
+main
