@@ -1,7 +1,22 @@
 #!/bin/bash
-# # curl -S -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/nstall_caldera_docker.sh | bash
+# curl -S -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/nstall_caldera_docker.sh | bash
 
 set -e
+
+# Check if docker is installed
+if ! command -v docker &> /dev/null; then
+  echo "[*] Docker not found. Installing Docker..."
+  sudo apt update
+  sudo apt install -y docker.io
+  sudo systemctl start docker
+  sudo systemctl enable docker
+  echo "[*] Adding $USER to docker group..."
+  sudo usermod -aG docker $USER
+  echo "[*] You may need to logout/login or run 'newgrp docker' before running this script again."
+  exit 1
+else
+  echo "[*] Docker is installed."
+fi
 
 IMAGE_NAME="caldera:5.0.0"
 CONTAINER_NAME="caldera"
@@ -74,3 +89,4 @@ docker run -d -p 8888:8888 --name $CONTAINER_NAME $IMAGE_NAME
 
 echo "[✓] CALDERA is running in Docker."
 echo "Open your browser to https://localhost:8888 (default creds: red/admin)"
+
