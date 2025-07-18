@@ -1,4 +1,5 @@
 #!/bin/bash
+# curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/main/nstall_caldera_docker.sh | bash
 
 # Colors for output
 RED='\033[0;31m'
