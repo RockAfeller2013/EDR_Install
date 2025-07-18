@@ -1,64 +1,64 @@
 #!/bin/bash
 # curl -S -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/nstall_caldera_docker.sh | bash
-
+#!/bin/bash
 set -e
 
-# Check if docker is installed
-if ! command -v docker &> /dev/null; then
-  echo "[*] Docker not found. Installing Docker..."
+# Check Docker
+if ! command -v docker &>/dev/null; then
+  echo "[*] Installing Docker..."
   sudo apt update
   sudo apt install -y docker.io
   sudo systemctl start docker
   sudo systemctl enable docker
-  echo "[*] Adding $USER to docker group..."
   sudo usermod -aG docker $USER
-  echo "[*] You may need to logout/login or run 'newgrp docker' before running this script again."
+  echo
+  echo "# IMPORTANT:"
+  echo "# After first run, logout/login or run: newgrp docker"
   exit 1
-else
-  echo "[*] Docker is installed."
 fi
 
-IMAGE_NAME="caldera:5.0.0"
-CONTAINER_NAME="caldera"
-WORKDIR="$HOME/caldera-docker"
+echo "[*] Preparing Caldera Docker build..."
 
-echo "[*] Creating working directory at $WORKDIR"
-mkdir -p "$WORKDIR"
-cd "$WORKDIR"
+mkdir -p ~/caldera-docker
+cd ~/caldera-docker
 
-echo "[*] Writing Dockerfile..."
+# Clone Caldera repo locally
+if [ ! -d caldera ]; then
+  git clone --branch 5.0.0 https://github.com/mitre/caldera.git
+fi
+
+# Write Dockerfile
 cat > Dockerfile << 'EOF'
-# Use official python 3.8 image as base
 FROM python:3.8-slim
 
-# Install system deps
+# Install deps
 RUN apt-get update && apt-get install -y \
-    git curl wget openssl build-essential libxml2-dev libxslt1-dev zlib1g-dev libffi-dev gcc \
-    golang-go nodejs npm \
+    git curl wget build-essential libxml2-dev libxslt1-dev zlib1g-dev libffi-dev gcc \
+    golang-go nodejs npm openssl \
  && rm -rf /var/lib/apt/lists/*
 
-# Set working dir
+# Set workdir
 WORKDIR /opt/caldera
 
-# Clone CALDERA v5.0.0
-RUN git clone --branch 5.0.0 https://github.com/mitre/caldera.git .
+# Copy caldera source
+COPY caldera /opt/caldera
 
-# Install python deps
+# Set up virtualenv + install deps
 RUN python3 -m venv venv && \
     . venv/bin/activate && \
     pip install --upgrade pip setuptools wheel && \
     sed -i 's/lxml==4.9.3/lxml>=4.9.3/' requirements.txt && \
     pip install -r requirements.txt
 
-# Build Sandcat agent
+# Build sandcat agents
 RUN . venv/bin/activate && \
     cd agents/sandcat && \
     go mod tidy && \
     GOOS=windows GOARCH=amd64 go build -o sandcat.exe ./gocat.go && \
     GOOS=linux GOARCH=amd64 go build -o sandcat ./gocat.go
 
-# Install official plugins
-RUN mkdir plugins && cd plugins && \
+# Install all plugins
+RUN mkdir -p plugins && cd plugins && \
     git clone https://github.com/mitre/manx.git && \
     git clone https://github.com/mitre/stockpile.git && \
     git clone https://github.com/mitre/response.git && \
@@ -70,23 +70,26 @@ RUN mkdir plugins && cd plugins && \
     git clone https://github.com/mitre/fieldmanual.git && \
     git clone https://github.com/mitre/exfil.git
 
-# Generate self-signed certs
+# Generate TLS certs
 RUN mkdir certs && \
-    openssl req -x509 -newkey rsa:4096 -nodes -keyout certs/key.pem -out certs/cert.pem -days 365 -subj "/CN=caldera.local"
+    openssl req -x509 -newkey rsa:4096 -nodes \
+    -keyout certs/key.pem -out certs/cert.pem -days 365 \
+    -subj "/CN=caldera.local"
 
-# Expose port
 EXPOSE 8888
 
-# Default command to start CALDERA securely with all plugins
-CMD ["bash", "-c", "source venv/bin/activate && python server.py --certfile certs/cert.pem --keyfile certs/key.pem --plugins all"]
+CMD ["bash", "-c", "source venv/bin/activate && python3 server.py --certfile certs/cert.pem --keyfile certs/key.pem --plugins all"]
 EOF
 
-echo "[*] Building Docker image: $IMAGE_NAME"
-docker build -t $IMAGE_NAME .
+# Build Docker image
+docker build -t caldera:5.0.0 .
 
-echo "[*] Running Docker container: $CONTAINER_NAME"
-docker run -d -p 8888:8888 --name $CONTAINER_NAME $IMAGE_NAME
+# Run container
+docker run -d -p 8888:8888 --name caldera caldera:5.0.0
 
-echo "[✓] CALDERA is running in Docker."
-echo "Open your browser to https://localhost:8888 (default creds: red/admin)"
+echo
+echo "[✓] Caldera is running in Docker on https://localhost:8888"
+echo "    Username: red | Password: admin"
+echo
+echo "# If Docker was just installed, logout/login or run: newgrp docker"
 
