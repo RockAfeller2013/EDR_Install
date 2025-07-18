@@ -1,12 +1,8 @@
 #!/bin/bash
-# curl -S -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/nstall_caldera_docker.sh | bash
 
 set -e
 
-rm -rf ~/caldera-docker
-
-
-echo "[*] Updating and installing base dependencies..."
+echo "[*] Updating Kali and installing base dependencies..."
 sudo apt update && sudo apt install -y \
   git curl wget build-essential libxml2-dev libxslt1-dev zlib1g-dev libffi-dev \
   gcc golang openssl python3 python3-pip python3-venv ca-certificates lsb-release gnupg apt-transport-https
@@ -27,7 +23,6 @@ sudo curl -L "https://github.com/docker/compose/releases/download/v$DOCKER_COMPO
 sudo chmod +x /usr/local/bin/docker-compose
 sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
 
-# Important: if this is the first time Docker was installed
 echo "# Important:
 # After first run, if Docker wasn’t installed before, logout and login again or run:
 #   newgrp docker
@@ -70,9 +65,9 @@ EOF
 echo "[*] Building Caldera Docker image..."
 docker build -t caldera:5.0.0 .
 
-echo "[*] Running Caldera on http://localhost:8888..."
+echo "[*] Running Caldera..."
 docker run -d --name caldera -p 8888:8888 caldera:5.0.0
 
 echo "[✔] Caldera v5 is now running."
-echo "    Access it at: http://localhost:8888"
-echo "    Default login: red / admin"
+echo "    URL: http://localhost:8888"
+echo "    Login: red / admin"
