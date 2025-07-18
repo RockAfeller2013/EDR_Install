@@ -1,5 +1,5 @@
 #!/bin/bash
-# curl -S -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/installdocker.sh
+# curl -S -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/installdocker.sh | bash
 #!/bin/bash
 set -e
 
