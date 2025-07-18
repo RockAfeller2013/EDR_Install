@@ -1,0 +1,1 @@
+Invoke-WebRequest -Uri "https://defense-prodsyd.conferdeploy.net/appservices/v5/orgs/7853/kits/installer_vista_win7_win8-64-4.0.3.2029.msi?X-Org=7MLU2D8N" -OutFile "$env:TEMP\sensor.msi"; Start-Process msiexec -ArgumentList "/q /i `"$env:TEMP\sensor.msi`" COMPANY_CODE=ZVFJP6Q4W5IJ0MN15L95 POLICY_NAME=CBCDEMO_EDR GROUP_NAME=CBCDEMO1" -Wait
