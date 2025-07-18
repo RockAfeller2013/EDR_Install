@@ -1,5 +1,5 @@
 #!/bin/bash
-# curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/install_caldera.sh | bash
+# curl -sS -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/install_caldera.sh | bash
 
 # Full CALDERA Installer for Kali Linux
 # Includes: CALDERA + Go + Sandcat + HTTPS + All Official Plugins + Headless Mode
