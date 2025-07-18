@@ -3,51 +3,43 @@
 
 set -e
 
-# Check Docker
-if ! command -v docker &>/dev/null; then
-  echo "[*] Installing Docker..."
-  sudo apt update
-  sudo apt install -y docker.io
-  sudo systemctl start docker
-  sudo systemctl enable docker
+echo "[*] Updating system..."
+sudo apt update && sudo apt install -y curl git sudo
+
+echo "[*] Installing Docker (if needed)..."
+if ! command -v docker &> /dev/null; then
+  curl -fsSL https://get.docker.com | sh
   sudo usermod -aG docker $USER
-  echo
-  echo "# IMPORTANT:"
-  echo "# After first run, logout/login or run: newgrp docker"
-  exit 1
+  echo "# Important: Docker was just installed. Please run 'newgrp docker' or logout/login before continuing."
 fi
 
-echo "[*] Preparing Caldera Docker build..."
+echo "[*] Installing Docker Compose plugin..."
+sudo apt install -y docker-compose-plugin
 
-mkdir -p ~/caldera-docker
-cd ~/caldera-docker
+echo "[*] Cloning Caldera v5.0.0..."
+mkdir -p ~/caldera-docker && cd ~/caldera-docker
+git clone --depth 1 --branch 5.0.0 https://github.com/mitre/caldera.git
 
-# Clone Caldera repo locally
-if [ ! -d caldera ]; then
-  git clone --branch 5.0.0 https://github.com/mitre/caldera.git
-fi
-
-# Write Dockerfile
+echo "[*] Creating Dockerfile..."
 cat > Dockerfile << 'EOF'
-FROM python:3.8-slim
+FROM kalilinux/kali-rolling
 
-# Install deps
-RUN apt-get update && apt-get install -y \
-    git curl wget build-essential libxml2-dev libxslt1-dev zlib1g-dev libffi-dev gcc \
-    golang-go nodejs npm openssl \
- && rm -rf /var/lib/apt/lists/*
+# Install dependencies
+RUN apt update && apt install -y \
+    python3 python3-venv python3-dev python3-pip \
+    curl git gcc make wget unzip \
+    nodejs npm \
+    golang
 
-# Set workdir
 WORKDIR /opt/caldera
 
 # Copy caldera source
 COPY caldera /opt/caldera
 
-# Set up virtualenv + install deps
+# Set up Python virtual environment
 RUN python3 -m venv venv && \
     . venv/bin/activate && \
-    pip install --upgrade pip setuptools wheel && \
-    sed -i 's/lxml==4.9.3/lxml>=4.9.3/' requirements.txt && \
+    pip install --upgrade pip && \
     pip install -r requirements.txt
 
 # Build sandcat agents
@@ -57,39 +49,25 @@ RUN . venv/bin/activate && \
     GOOS=windows GOARCH=amd64 go build -o sandcat.exe ./gocat.go && \
     GOOS=linux GOARCH=amd64 go build -o sandcat ./gocat.go
 
-# Install all plugins
-RUN mkdir -p plugins && cd plugins && \
-    git clone https://github.com/mitre/manx.git && \
-    git clone https://github.com/mitre/stockpile.git && \
-    git clone https://github.com/mitre/response.git && \
-    git clone https://github.com/mitre/compass.git && \
-    git clone https://github.com/mitre/access.git && \
-    git clone https://github.com/mitre/atomic.git && \
-    git clone https://github.com/mitre/builder.git && \
-    git clone https://github.com/mitre/debrief.git && \
-    git clone https://github.com/mitre/fieldmanual.git && \
-    git clone https://github.com/mitre/exfil.git
+# Enable all plugins
+RUN for dir in plugins/*; do \
+      if [ -f "$dir/requirements.txt" ]; then \
+        . venv/bin/activate && pip install -r "$dir/requirements.txt"; \
+      fi; \
+    done
 
-# Generate TLS certs
-RUN mkdir certs && \
-    openssl req -x509 -newkey rsa:4096 -nodes \
-    -keyout certs/key.pem -out certs/cert.pem -days 365 \
-    -subj "/CN=caldera.local"
-
-EXPOSE 8888
-
-CMD ["bash", "-c", "source venv/bin/activate && python3 server.py --certfile certs/cert.pem --keyfile certs/key.pem --plugins all"]
+# Run Caldera with headless mode and default plugins
+CMD . venv/bin/activate && \
+    python3 server.py --headless
 EOF
 
-# Build Docker image
+echo "[*] Building Docker image: caldera:5.0.0"
 docker build -t caldera:5.0.0 .
 
-# Run container
-docker run -d -p 8888:8888 --name caldera caldera:5.0.0
+echo "[*] Done! You can now run Caldera with:"
+echo "docker run -it --rm -p 8888:8888 caldera:5.0.0"
+echo
+echo "# Important: If Docker was just installed, run this first:"
+echo "newgrp docker"
 
-echo
-echo "[✓] Caldera is running in Docker on https://localhost:8888"
-echo "    Username: red | Password: admin"
-echo
-echo "# If Docker was just installed, logout/login or run: newgrp docker"
 
