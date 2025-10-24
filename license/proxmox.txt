@@ -14,6 +14,7 @@ lvs
 vlsdisplay 
 
 # Make VM Directory 
+# You cant create a directory inside your local-vm, you need to first craete a directory to downl;oad the qcom2 raw file then import it
 
 mkdir /var/lib/vz/images/202/
 
