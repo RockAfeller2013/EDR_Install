@@ -71,12 +71,12 @@ qm reboot 202
 
 
 ##########################
+## Login root username and password is inside the user-data.yaml 
 ## SSH into the VM
 
 ssh-keygen -R 192.168.1.30
 ssh root@192.168.1.30
 scp * root@192.168.1.30/user/root
-
 
 
 # Basic Checks
