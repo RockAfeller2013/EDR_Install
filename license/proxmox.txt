@@ -7,6 +7,12 @@
 
 # Deploy Carbon Black On-Prem EDR on Proxmox
 
+# Find Stroage folder
+
+cat /etc/pve/storage.cfg
+lvs
+vlsdisplay 
+
 # Make VM Directory 
 
 mkdir /var/lib/vz/images/202/
