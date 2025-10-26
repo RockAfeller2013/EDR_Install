@@ -1,5 +1,7 @@
 ################################################################################################
 
+# As of 27/10/2025 this works
+
 ## Fresh Install
 # As of July 2025, there are no supported non-Stream (classic) CentOS versions—CentOS Linux 7 reached end of life on June 30, 2024, and CentOS Linux 8 ended in 2021. The only active CentOS version is CentOS Stream 9, a rolling-release distro that acts as a preview of future RHEL 9 updates. For users needing a stable, production-ready, RHEL-compatible alternative, recommended options include Rocky Linux 9, AlmaLinux 9, and Oracle Linux 9.
 # https://chatgpt.com/c/68649b9e-7528-800e-ad09-7b01a816ba31
@@ -100,6 +102,7 @@ hostname
 # curl https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/license/setdns.sh
 
 # sudo yum clean all
+
 # sudo yum makecache
 #sudo yum upgrade -y
 #sudo yum clean all
@@ -140,6 +143,20 @@ echo "https://$(hostname -I | awk '{print $1}'):443"
 
 --------
 
+# Upgrade
+service cb-enterprise stop
+Modify etc/yum.repos.d/CarbonBlack.repo; set: baseurl=https://yum.distro.carbonblack.io/enterprise/stable/$releasever/$basearch/
+
+yum clean all
+yum update cb-enterprise
+/usr/share/cb/cbupgrade
+service cb-enterprise start
+
+## Unifiedview
+sudo yum upgrade cb-unifiedview
+sudo service cb-unifiedview start
+
+--------
 qm snapshot 202 pre-install --description "Snapshot before installing Carbon Black"
 
 
