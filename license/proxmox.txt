@@ -188,3 +188,31 @@ qm listsnapshot 101
 
 qm shutdown 202
 qm destroy 202 --purge
+
+
+
+--------
+## Uninstall 
+
+# Stop Carbon Black EDR services
+echo "Stopping Carbon Black EDR services..."
+sudo /usr/share/cb/cbcluster stop
+sudo service cb-enterprise stop 2>/dev/null
+
+# Remove Carbon Black EDR packages
+echo "Removing Carbon Black EDR packages..."
+sudo yum remove -y cb-enterprise cb-datagrid cb-datastore cb-solr cb-swagger cbui libselinux-cb-python python-cb-coreservices python-cb-response-venv
+
+# Delete remaining directories
+echo "Deleting remaining directories..."
+sudo rm -rf /var/www/cb /var/run/cb /var/log/cb /var/lib/cb /var/cb /usr/share/cb /etc/cb
+
+# Clean up orphaned dependencies
+echo "Cleaning up orphaned dependencies..."
+sudo yum autoremove -y
+
+# Reboot server
+echo "Uninstall complete. Rebooting server..."
+sudo reboot
+--------
+
