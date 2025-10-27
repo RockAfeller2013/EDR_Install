@@ -222,7 +222,8 @@ sudo reboot
 --------
 ## Deloy sensor 
 
-curl -kLO "https://192.168.1.30/api/v1/group/1/installer/linux"
+curl -kL -o CarbonBlackLinuxInstaller.tar.gz "https://192.168.1.30/api/v1/group/1/installer/linux"
+
 scp CarbonBlackLinuxInstaller-v7.3.2.93764-Self.tar.gz root@192.168.1.30:/home 
 sudo -i
 tar -xzf CarbonBlackLinuxInstaller-v7.3.2.93764-Self.tar.gz
