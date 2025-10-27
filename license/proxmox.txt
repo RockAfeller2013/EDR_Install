@@ -214,5 +214,13 @@ sudo yum autoremove -y
 # Reboot server
 echo "Uninstall complete. Rebooting server..."
 sudo reboot
+
+--------
+## Deloy sensor 
+
+scp CarbonBlackLinuxInstaller-v7.3.2.93764-Self.tar.gz root@192.168.1.30:/home 
+sudo -i
+tar -xzf CarbonBlackLinuxInstaller-v7.3.2.93764-Self.tar.gz
+chmod +x CarbonBlackClientSetup-linux-v7.3.2.93764.sh
 --------
 
