@@ -220,6 +220,27 @@ echo "Uninstall complete. Rebooting server..."
 sudo reboot
 
 --------
+
+
+$ Download Sensor via API
+
+curl -X POST "https://<CB_SERVER>/api/v1/auth" \
+     -H "Content-Type: application/json" \
+     -d '{"username": "<USERNAME>", "password": "<PASSWORD>"}'
+
+{"token": "ABCDEF1234567890"}
+
+curl -H "X-Auth-Token: ABCDEF1234567890" \
+     -H "Accept: application/octet-stream" \
+     -o sensor-installer-linux.tar.gz \
+     "https://<CB_SERVER>/api/v1/sensor-installer?os_type=linux"
+
+sudo dnf install jq   # Rocky, RHEL, Fedora
+sudo apt install jq   # Ubuntu, Debian
+
+TOKEN=$(curl -s -X POST "https://<CB_SERVER>/api/v1/auth" -H "Content-Type: application/json" -d '{"username":"<USERNAME>","password":"<PASSWORD>"}' | jq -r '.token') && curl -H "X-Auth-Token: $TOKEN" -H "Accept: application/octet-stream" -o sensor-installer-linux.tar.gz "https://<CB_SERVER>/api/v1/sensor-installer?os_type=linux"
+
+--------
 ## Deloy sensor 
 
 curl -kL -o CarbonBlackLinuxInstaller.tar.gz "https://192.168.1.30/api/v1/group/1/installer/linux"
