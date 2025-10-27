@@ -19,6 +19,8 @@
 #   ./download_cb_sensor.sh cb.example.local admin /path/to/password_file
 #   ./download_cb_sensor.sh 192.168.1.30 cbadmin 'SecretPass!' cb_sensor.tar.gz
 #   ./download_cb_sensor.sh cb.example.local admin MyPass123
+#
+# curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/download_cb_sensor.sh | bash -s -- cb.example.local admin MyPassword123
 
 # Function to validate server format
 
