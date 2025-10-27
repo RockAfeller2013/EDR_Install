@@ -224,3 +224,6 @@ tar -xzf CarbonBlackLinuxInstaller-v7.3.2.93764-Self.tar.gz
 chmod +x CarbonBlackClientSetup-linux-v7.3.2.93764.sh
 --------
 
+process_name:bash OR process_name:zsh AND username:root AND start:[NOW-
+
+
