@@ -211,6 +211,10 @@ sudo rm -rf /var/www/cb /var/run/cb /var/log/cb /var/lib/cb /var/cb /usr/share/c
 echo "Cleaning up orphaned dependencies..."
 sudo yum autoremove -y
 
+# Remove Sensor
+/opt/carbonblack/response/bin/sensoruninstall.sh
+
+
 # Reboot server
 echo "Uninstall complete. Rebooting server..."
 sudo reboot
