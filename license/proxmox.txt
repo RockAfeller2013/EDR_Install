@@ -7,6 +7,8 @@
 # https://chatgpt.com/c/68649b9e-7528-800e-ad09-7b01a816ba31
 # cat  revyuild200.sh | base64 | awk '{print "\033]52;c;" $0 "\a"}'
 
+# What Repo Contains a Specific Server Version? https://knowledge.broadcom.com/external/article?articleNumber=285701
+
 # Deploy Carbon Black On-Prem EDR on Proxmox
 
 # Find Stroage folder
