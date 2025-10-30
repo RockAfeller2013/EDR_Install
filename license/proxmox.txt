@@ -79,7 +79,6 @@ qm reboot 202
 ## SSH into the VM
 
 qm guest cmd 202 network-get-interfaces
-
 ssh-keygen -R 192.168.1.30
 ssh root@192.168.1.30
 scp * root@192.168.1.30/user/root
@@ -104,11 +103,11 @@ hostname
 # curl https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/license/setdns.sh
 
 # sudo yum clean all
-
 # sudo yum makecache
-#sudo yum upgrade -y
-#sudo yum clean all
+# sudo yum upgrade -y
 
+
+# Begin Install
 # Download Carbon Black EDR License
 # curl -o /etc/yum.repos.d/CarbonBlack.repo "https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/license/CarbonBlack.repo"
 # cat /etc/yum.repos.d/CarbonBlack.repo
@@ -117,6 +116,7 @@ curl -LO https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/lice
 curl -o 52793833-2-1-1731894808466.lic "https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/license/52793833-2-1-1731894808466.lic"
 curl -LO "https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/cbinit.ini"
 
+sudo yum clean all
 sudo rpm -ivh --force carbon-black-release-1.0.5-1.x86_64.rpm
 
 # Install 
