@@ -8,7 +8,8 @@
 #   ./build_cb_vm.sh 202
 #   ./build_cb_vm.sh 203 cbresponse2 192.168.1.50/24
 # ==========================================================
-#  curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/download_cb_sensor.sh | bash -s -- cb.example.local admin MyPassword123
+# curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/license/auto_install_EDR.sh | bash -s -- 203 edr-node 192.168.1.51/24
+
 
 set -e
 
