@@ -54,7 +54,10 @@ qm importdisk 202 /var/lib/vz/images/202/Rocky-8-GenericCloud-Base.latest.x86_64
 qm set 202 --scsi0 local-lvm:vm-202-disk-0
 qm set 202 --ide2 local:cloudinit
 qm set 202 --boot order=scsi0
+
 qm set 202 --cicustom "user=local:snippets/user-data.yaml"
+qm set 202 --cicustom "user=local:snippets/auto_install.yaml"
+
 qm set 202 --ide2 local-lvm:cloudinit
 qm cloudinit update 202
 qm config 202
