@@ -7,6 +7,7 @@
 # Example:
 #   ./auto_install_EDR.sh 202 cbresponse2 192.168.1.30/24
 # ==========================================================
+# curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/license/auto_install_EDR.sh | bash -s -- 202 cbresponse2 192.168.1.52/24
 
 set -e
 
