@@ -83,9 +83,9 @@ qm importdisk "$VMID" "$QCOW_PATH" "$STORAGE"
 # --- Configure disk and cloud-init ---
 echo "[+] Attaching disk and Cloud-init configuration..."
 qm set "$VMID" --scsi0 "$STORAGE:vm-${VMID}-disk-0"
-qm set "$VMID" --ide2 local:cloudinit,media=cdrom
+qm set "$VMID" --ide2 local:cloudinit
 qm set "$VMID" --boot order=scsi0
-qm set "$VMID" --cicustom "user=local:snippets/user-data.yaml"
+qm set "$VMID" --cicustom "user=local:snippets/auto_install.yaml"
 qm set "$VMID" --nameserver "$NAMESERVERS"
 qm set "$VMID" --ipconfig0 "ip=${IP_ADDR},gw=${GATEWAY}"
 qm set "$VMID" --ciuser root --cipassword Password1!
