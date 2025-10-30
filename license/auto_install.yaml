@@ -1,79 +1,106 @@
-#cloud-config
-hostname: cbresponse
-fqdn: cbresponse.local
-manage_etc_hosts: true
+#!/bin/bash
+# ==========================================================
+# Proxmox VM Build Script for Carbon Black EDR on Rocky Linux
+# Stores Rocky image in /var/lib/vz/template/qcow2 and VM disks in local-lvm
+# Usage:
+#   ./auto_install_EDR.sh <VMID> <hostname> <ip/cidr>
+# Example:
+#   ./auto_install_EDR.sh 202 cbresponse2 192.168.1.30/24
+# ==========================================================
 
-users:
-  - name: root
-    plain_text_passwd: "Password1!"
-    lock_passwd: false
-    shell: /bin/bash
+set -e
 
-  - name: centos
-    plain_text_passwd: "Password1!"
-    lock_passwd: false
-    shell: /bin/bash
-    groups: wheel
-    sudo: ALL=(ALL) NOPASSWD:ALL
+# --- Input Validation ---
+if [ -z "$1" ]; then
+  echo "Usage: $0 <VMID> <hostname> <ip/cidr>"
+  exit 1
+fi
 
-ssh_pwauth: true
-disable_root: false
+VMID="$1"
+HOSTNAME="${2:-cbresponse}"
+IP_ADDR="${3:-192.168.1.30/24}"
 
-timezone: Australia/Sydney
-package_update: true
-packages:
-  - qemu-guest-agent
+# --- Defaults ---
+VM_NAME="${HOSTNAME}-${VMID}"
+MEMORY="32768"
+CORES="4"
+BRIDGE="vmbr0"
+GATEWAY="192.168.1.99"
+NAMESERVERS="1.1.1.1,8.8.8.8"
+STORAGE="local-lvm"
 
-network:
-  version: 2
-  ethernets:
-    eth0:
-      addresses:
-        - 192.168.1.30/24
-      gateway4: 192.168.1.99
-      nameservers:
-        addresses:
-          - 1.1.1.1
-          - 8.8.8.8
+TEMPLATE_STORAGE="local"
+TEMPLATE_DIR="/var/lib/vz/template/qcow2"
+QCOW_NAME="Rocky-8-GenericCloud-Base.latest.x86_64.qcow2"
+QCOW_PATH="${TEMPLATE_DIR}/${QCOW_NAME}"
+ROCKY_URL="https://dl.rockylinux.org/pub/rocky/8/images/x86_64/${QCOW_NAME}"
+CLOUDINIT_SNIPPET="/var/lib/vz/snippets/auto_install.yaml"
+CLOUDINIT_URL="https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/license/auto_install.yaml"
 
-write_files:
-  - path: /etc/ssh/sshd_config.d/99-rootlogin.conf
-    content: |
-      PermitRootLogin yes
-      PasswordAuthentication yes
+echo "==========================================="
+echo " Proxmox VM Build Script"
+echo "-------------------------------------------"
+echo " VMID:       ${VMID}"
+echo " Hostname:   ${HOSTNAME}"
+echo " IP Address: ${IP_ADDR}"
+echo " Gateway:    ${GATEWAY}"
+echo "==========================================="
 
-runcmd:
-  - systemctl enable --now qemu-guest-agent
-  - systemctl restart sshd
-  - sysctl -w net.ipv6.conf.all.disable_ipv6=1
-  - sysctl -w net.ipv6.conf.default.disable_ipv6=1
-  - echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
-  - echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
+# --- Ensure template dir exists ---
+mkdir -p "$TEMPLATE_DIR"
 
-  # Install Carbon Black EDR
-  - cd /tmp
-  - curl -LO https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/license/carbon-black-release-1.0.5-1.x86_64.rpm
-  - curl -o 52793833-2-1-1731894808466.lic "https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/license/52793833-2-1-1731894808466.lic"
-  - curl -LO "https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/cbinit.ini"
+# --- Download Rocky Linux QCOW2 image if missing ---
+if [ ! -f "$QCOW_PATH" ]; then
+  echo "[+] Downloading Rocky Linux 8 Cloud image..."
+  curl -fsSL -o "$QCOW_PATH" "$ROCKY_URL"
+else
+  echo "[=] Using existing Rocky Linux image at ${QCOW_PATH}"
+fi
 
-  - yum clean all
-  - rpm -ivh --force carbon-black-release-1.0.5-1.x86_64.rpm
+# --- Download Cloud-init snippet from correct URL ---
+if [ ! -f "$CLOUDINIT_SNIPPET" ]; then
+  echo "[+] Downloading Cloud-init configuration from GitHub..."
+  curl -fsSL -o "$CLOUDINIT_SNIPPET" "$CLOUDINIT_URL"
+else
+  echo "[=] Using existing Cloud-init snippet at ${CLOUDINIT_SNIPPET}"
+fi
 
-  - yum -y module disable postgresql redis python38 python39
-  - yum -y install --nogpgcheck cb-enterprise
+# --- Create the VM ---
+echo "[+] Creating VM ID: ${VMID}"
+qm create "$VMID" \
+  --name "$VM_NAME" \
+  --memory "$MEMORY" \
+  --cores "$CORES" \
+  --net0 virtio,bridge="$BRIDGE" \
+  --scsihw virtio-scsi-pci \
+  --ostype l26 \
+  --cpu host \
+  --serial0 socket \
+  --agent 1 \
+  --boot order=scsi0
 
-  - /usr/share/cb/cbinit cbinit.ini
-  - /usr/share/cb/cbssl backup --out /root/backup.bac
+# --- Import the QCOW2 disk to local-lvm ---
+echo "[+] Importing QCOW2 disk into ${STORAGE}..."
+qm importdisk "$VMID" "$QCOW_PATH" "$STORAGE"
 
-  - systemctl enable cb-enterprise
-  - systemctl start cb-enterprise
-  - systemctl status cb-enterprise || true
+# --- Configure disk and cloud-init ---
+echo "[+] Attaching disk and Cloud-init configuration..."
+qm set "$VMID" --scsi0 "$STORAGE:vm-${VMID}-disk-0"
+qm set "$VMID" --ide2 "$TEMPLATE_STORAGE:cloudinit"
+qm set "$VMID" --boot order=scsi0
+qm set "$VMID" --cicustom "user=local:snippets/auto_install.yaml"
+qm set "$VMID" --nameserver "$NAMESERVERS"
+qm set "$VMID" --ipconfig0 "ip=${IP_ADDR},gw=${GATEWAY}"
+qm set "$VMID" --ciuser root --cipassword Password1!
+qm set "$VMID" --hostname "$HOSTNAME"
 
-  - echo "Waiting 5 minutes for Carbon Black EDR to initialize..."
-  - sleep 300
+# --- Update Cloud-init ---
+echo "[+] Updating Cloud-init..."
+qm cloudinit update "$VMID"
 
-  - echo "Checking HTTPS response..."
-  - curl --insecure -I https://192.168.1.30:443 | grep HTTP || true
-  - curl --insecure -s --head https://192.168.1.30:443 | head -n 1 || true
+# --- Show VM configuration ---
+echo "[+] VM Configuration complete:"
+qm config "$VMID"
 
-  - echo "Access URL: https://$(hostname -I | awk '{print $1}'):443"
+echo "✅ VM ${VMID} (${VM_NAME}) ready to start."
+echo "Use 'qm start ${VMID}' to boot the VM."
