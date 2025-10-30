@@ -258,5 +258,39 @@ chmod +x CarbonBlackClientSetup-linux-v7.3.2.93764.sh
 --------
 
 process_name:bash OR process_name:zsh AND username:root AND start:[NOW-
+--------
+## TESTING
+
+curl -o /var/lib/vz/snippets/auto_install.yaml https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/license/auto_install.yaml
+
+qm create 202 \
+  --name cbresponse2 \
+  --memory 32768 \
+  --cores 4 \
+  --net0 virtio,bridge=vmbr0 \
+  --scsihw virtio-scsi-pci \
+  --ostype l26 \
+  --cpu host \
+  --serial0 socket \
+  --agent 1 \
+  --boot order=scsi0
+
+
+qm set 203 --scsi0 local-lvm:vm-203-disk-0
+qm set 203 --ide2 local:cloudinit
+qm set 203 --boot order=scsi0
+qm set 203 --cicustom "user=local:snippets/auto_install.yaml"
+qm set 203 --ide2 local-lvm:cloudinit
+qm set 203 --ciuser root --cipassword Password1!
+qm cloudinit update 203
+qm config 203
+
+qm set 203 --ipconfig0 ip=192.168.1.54/24,gw=192.168.1.99
+qm set 203 --nameserver 198.142.152.164
+qm cloudinit update 203
+qm start 203
+qm terminal 203
+--------
+
 
 
