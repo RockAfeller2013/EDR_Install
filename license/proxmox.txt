@@ -29,6 +29,7 @@ curl -o /var/lib/vz/images/202/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2 htt
 # Download Config
 
 curl -o /var/lib/vz/snippets/user-data.yaml https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/license/user-data.yaml
+curl -o /var/lib/vz/snippets/auto_install.yaml https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/license/auto_install.yaml
 
 # Create the VM
 
