@@ -93,7 +93,7 @@ qm set "$VMID" --cicustom "user=local:snippets/auto_install.yaml"
 qm set "$VMID" --nameserver "$NAMESERVERS"
 qm set "$VMID" --ipconfig0 "ip=${IP_ADDR},gw=${GATEWAY}"
 qm set "$VMID" --ciuser root --cipassword Password1!
-qm set "$VMID" --hostname "$HOSTNAME"
+# qm set "$VMID" --hostname "$HOSTNAME"
 
 # --- Update Cloud-init ---
 echo "[+] Updating Cloud-init..."
