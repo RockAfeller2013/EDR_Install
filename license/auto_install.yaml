@@ -1,0 +1,79 @@
+#cloud-config
+hostname: cbresponse
+fqdn: cbresponse.local
+manage_etc_hosts: true
+
+users:
+  - name: root
+    plain_text_passwd: "Password1!"
+    lock_passwd: false
+    shell: /bin/bash
+
+  - name: centos
+    plain_text_passwd: "Password1!"
+    lock_passwd: false
+    shell: /bin/bash
+    groups: wheel
+    sudo: ALL=(ALL) NOPASSWD:ALL
+
+ssh_pwauth: true
+disable_root: false
+
+timezone: Australia/Sydney
+package_update: true
+packages:
+  - qemu-guest-agent
+
+network:
+  version: 2
+  ethernets:
+    eth0:
+      addresses:
+        - 192.168.1.30/24
+      gateway4: 192.168.1.99
+      nameservers:
+        addresses:
+          - 1.1.1.1
+          - 8.8.8.8
+
+write_files:
+  - path: /etc/ssh/sshd_config.d/99-rootlogin.conf
+    content: |
+      PermitRootLogin yes
+      PasswordAuthentication yes
+
+runcmd:
+  - systemctl enable --now qemu-guest-agent
+  - systemctl restart sshd
+  - sysctl -w net.ipv6.conf.all.disable_ipv6=1
+  - sysctl -w net.ipv6.conf.default.disable_ipv6=1
+  - echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+  - echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
+
+  # Install Carbon Black EDR
+  - cd /tmp
+  - curl -LO https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/license/carbon-black-release-1.0.5-1.x86_64.rpm
+  - curl -o 52793833-2-1-1731894808466.lic "https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/license/52793833-2-1-1731894808466.lic"
+  - curl -LO "https://github.com/RockAfeller2013/EDR_Install/raw/refs/heads/main/cbinit.ini"
+
+  - yum clean all
+  - rpm -ivh --force carbon-black-release-1.0.5-1.x86_64.rpm
+
+  - yum -y module disable postgresql redis python38 python39
+  - yum -y install --nogpgcheck cb-enterprise
+
+  - /usr/share/cb/cbinit cbinit.ini
+  - /usr/share/cb/cbssl backup --out /root/backup.bac
+
+  - systemctl enable cb-enterprise
+  - systemctl start cb-enterprise
+  - systemctl status cb-enterprise || true
+
+  - echo "Waiting 5 minutes for Carbon Black EDR to initialize..."
+  - sleep 300
+
+  - echo "Checking HTTPS response..."
+  - curl --insecure -I https://192.168.1.30:443 | grep HTTP || true
+  - curl --insecure -s --head https://192.168.1.30:443 | head -n 1 || true
+
+  - echo "Access URL: https://$(hostname -I | awk '{print $1}'):443"
