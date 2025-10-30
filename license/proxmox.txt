@@ -275,6 +275,7 @@ qm create 203 \
   --agent 1 \
   --boot order=scsi0
 
+qm importdisk 203 /var/lib/vz/images/202/Rocky-8-GenericCloud-Base.latest.x86_64.qcow2 local-lvm
 
 qm set 203 --scsi0 local-lvm:vm-203-disk-0
 qm set 203 --ide2 local:cloudinit
