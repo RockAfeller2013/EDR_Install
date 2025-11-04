@@ -146,6 +146,14 @@ curl --insecure -s --head https://192.168.193.141:443 | head -n 1
 # Print access URL
 echo "https://$(hostname -I | awk '{print $1}'):443"
 
+# Allow Root login
+
+sudo tee /etc/ssh/sshd_config.d/enable-root.conf >/dev/null <<EOF
+PermitRootLogin yes
+PasswordAuthentication yes
+EOF
+sudo systemctl restart sshd
+
 
 --------
 
