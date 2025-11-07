@@ -23,6 +23,7 @@
 # sudo dnf install -y jq
 
 # curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/download_cb_sensor.sh | bash -s -- 192.168.1.30 admin Password1!
+# https://developer.carbonblack.com/reference/enterprise-response/latest/rest-api/#download-sensor-installer
 
 # Usage: ./download_cb_sensor.sh <CB_SERVER> <USERNAME> <PASSWORD> [OUTPUT_FILE]
 # Example: ./download_cb_sensor.sh cb.example.local admin MyPassword123
