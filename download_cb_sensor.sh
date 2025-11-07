@@ -29,43 +29,39 @@
 # Example: ./download_cb_sensor.sh cb.example.local admin MyPassword123
 # Check if minimum arguments provided
 
-if [ "$#" -lt 3 ]; then
-    echo "Usage: $0 <CB_SERVER> <USERNAME> <PASSWORD> [OUTPUT_FILE]"
-    echo "Example: $0 cb.example.local admin MyPassword123 sensor.tar.gz"
+# To create an API key in Carbon Black:
+
+# Log into the Carbon Black web console at https://192.168.1.30
+# Navigate to User Management → API Keys
+# Click Add API Key
+# Give it a name and appropriate permissions
+# Copy the generated token
+
+# ./download_cb_sensor.sh 192.168.1.30 YOUR_API_TOKEN_HERE
+
+#!/bin/bash
+# Usage: ./download_cb_sensor.sh <CB_SERVER> <API_TOKEN> [OUTPUT_FILE]
+
+if [ "$#" -lt 2 ]; then
+    echo "Usage: $0 <CB_SERVER> <API_TOKEN> [OUTPUT_FILE]"
+    echo "Example: $0 192.168.1.30 YOUR_API_TOKEN sensor.tar.gz"
+    echo ""
+    echo "To get an API token:"
+    echo "1. Log into Carbon Black web console"
+    echo "2. Go to User Management > API Keys"
+    echo "3. Create a new API key"
     exit 1
 fi
 
-# Get arguments
 CB_SERVER="$1"
-USERNAME="$2"
-PASSWORD="$3"
-OUTPUT="${4:-sensor-installer-linux.tar.gz}"
-
-# Check if jq is available
-if ! command -v jq &> /dev/null; then
-    echo "Error: 'jq' is required but not installed. Please install jq."
-    exit 1
-fi
-
-# Get API token
-echo "Authenticating to Carbon Black server..."
-TOKEN=$(curl -s -X POST "https://$CB_SERVER/api/v1/auth" \
-  -H "Content-Type: application/json" \
-  -d "{\"username\":\"$USERNAME\",\"password\":\"$PASSWORD\"}" | jq -r '.token')
-
-if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
-    echo "Error: Failed to obtain API token. Check credentials and server address."
-    exit 1
-fi
+API_TOKEN="$2"
+OUTPUT="${3:-sensor-installer-linux.tar.gz}"
 
 echo "Downloading sensor installer..."
-# Download the sensor
-curl -f -H "X-Auth-Token: $TOKEN" \
-     -H "Accept: application/octet-stream" \
+curl -k -f -H "X-Auth-Token: $API_TOKEN" \
      -o "$OUTPUT" \
-     "https://$CB_SERVER/api/v1/sensor-installer?os_type=linux"
+     "https://$CB_SERVER/api/v1/group/1/installer/linux"
 
-# Check if download was successful
 if [ $? -eq 0 ] && [ -s "$OUTPUT" ]; then
     echo "Download complete: $OUTPUT"
     echo "File size: $(du -h "$OUTPUT" | cut -f1)"
