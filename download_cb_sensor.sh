@@ -19,8 +19,10 @@
 #   ./download_cb_sensor.sh cb.example.local admin /path/to/password_file
 #   ./download_cb_sensor.sh 192.168.1.30 cbadmin 'SecretPass!' cb_sensor.tar.gz
 #   ./download_cb_sensor.sh cb.example.local admin MyPass123
-#
-# curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/download_cb_sensor.sh | bash -s -- 192.168.1.30 admin MyPassword123
+
+# sudo dnf install -y jq
+
+# curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/download_cb_sensor.sh | bash -s -- 192.168.1.30 admin Password1!
 
 # Usage: ./download_cb_sensor.sh <CB_SERVER> <USERNAME> <PASSWORD> [OUTPUT_FILE]
 # Example: ./download_cb_sensor.sh cb.example.local admin MyPassword123
