@@ -22,7 +22,7 @@
 
 # sudo dnf install -y jq
 
-# curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/download_cb_sensor.sh | bash -s -- 192.168.1.30 admin Password1!
+# curl -sSL https://raw.githubusercontent.com/RockAfeller2013/EDR_Install/refs/heads/main/download_cb_sensor.sh | bash -s -- 192.168.1.30 TOKEN
 # https://developer.carbonblack.com/reference/enterprise-response/latest/rest-api/#download-sensor-installer
 
 # Usage: ./download_cb_sensor.sh <CB_SERVER> <USERNAME> <PASSWORD> [OUTPUT_FILE]
@@ -57,10 +57,50 @@ CB_SERVER="$1"
 API_TOKEN="$2"
 OUTPUT="${3:-sensor-installer-linux.tar.gz}"
 
-echo "Downloading sensor installer..."
+echo "Downloading Linux sensor installer..."
 curl -k -f -H "X-Auth-Token: $API_TOKEN" \
      -o "$OUTPUT" \
      "https://$CB_SERVER/api/v1/group/1/installer/linux"
+
+if [ $? -eq 0 ] && [ -s "$OUTPUT" ]; then
+    echo "Download complete: $OUTPUT"
+    echo "File size: $(du -h "$OUTPUT" | cut -f1)"
+else
+    echo "Error: Download failed or file is empty."
+    exit 1
+fi
+
+echo "Downloading Windows EXE sensor installer..."
+curl -k -f -H "X-Auth-Token: $API_TOKEN" \
+     -o "$OUTPUT" \
+     "https://$CB_SERVER/api/v1/group/1/windows/exe"
+
+
+if [ $? -eq 0 ] && [ -s "$OUTPUT" ]; then
+    echo "Download complete: $OUTPUT"
+    echo "File size: $(du -h "$OUTPUT" | cut -f1)"
+else
+    echo "Error: Download failed or file is empty."
+    exit 1
+fi
+
+echo "Downloading Windows MSI sensor installer..."
+curl -k -f -H "X-Auth-Token: $API_TOKEN" \
+     -o "$OUTPUT" \
+     "https://$CB_SERVER/api/v1/group/1/windows/msi"
+
+if [ $? -eq 0 ] && [ -s "$OUTPUT" ]; then
+    echo "Download complete: $OUTPUT"
+    echo "File size: $(du -h "$OUTPUT" | cut -f1)"
+else
+    echo "Error: Download failed or file is empty."
+    exit 1
+fi
+
+echo "Downloading Mac sensor installer..."
+curl -k -f -H "X-Auth-Token: $API_TOKEN" \
+     -o "$OUTPUT" \
+     "https://$CB_SERVER/api/v1/group/1/osx"
 
 if [ $? -eq 0 ] && [ -s "$OUTPUT" ]; then
     echo "Download complete: $OUTPUT"
