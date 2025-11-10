@@ -1,0 +1,17 @@
+
+
+sudo dnf install -y python3 python3-pip && pip3 install cbapi && mkdir -p ~/.carbonblack && ca-certificates
+
+# Create credentials file (one-time setup)
+mkdir -p ~/.carbonblack
+cat > ~/.carbonblack/credentials.response << 'EOF'
+[default]
+url=https://192.168.1.30
+token=360f38f6db982b4a467bf01de416d2e33790c154
+ssl_verify=False
+EOF
+chmod 600 ~/.carbonblack/credentials.response
+
+# Then use without credentials:
+python3 manage_alerts.py list
+python3 manage_alerts.py resolve-all
