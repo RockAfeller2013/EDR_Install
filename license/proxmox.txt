@@ -302,4 +302,11 @@ qm terminal 203
 --------
 
 
+curl -s -H "X-Auth-Token: 360f38f6db982b4a467bf01de416d2e33790c154" "https://<CB_SERVER>/api/v1/alert" | jq -r '.results[].id' | xargs -I{} curl -s -X POST -H "X-Auth-Token: <API_TOKEN>" -H "Content-Type: application/json" -d '{"status":"resolved"}' "https://192.168.1.30/api/v1/alert/{}"
+
+
+
+
+
+
 
